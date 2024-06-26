@@ -1,42 +1,32 @@
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
 import os
+import subprocess
 import pyperclip
 
-def generate_ecdsa_keypair(bits=256):
-    # ECDSA 鍵の生成
-    curve = ec.SECP521R1()  # ここで楕円曲線の選択
-    private_key = ec.generate_private_key(curve, default_backend())
+def generate_ecdsa_ssh_key():
+    # Directory to save SSH key
+    ssh_dir = os.path.expanduser("~/.ssh")
+    if not os.path.exists(ssh_dir):
+        os.makedirs(ssh_dir)
 
-    # 秘密鍵のシリアライズ
-    private_key_bytes = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.TraditionalOpenSSL,
-        encryption_algorithm=serialization.NoEncryption()
-    )
+    # Key name
+    key_name = "ecdsa_key"
 
-    # 秘密鍵の保存
-    private_key_path = os.path.expanduser("~/.ssh/id_ecdsa")
-    with open(private_key_path, "wb") as f:
-        f.write(private_key_bytes)
+    # Generate ECDSA SSH key pair
+    if os.name == "posix":  # Unix-like system
+        subprocess.run(["ssh-keygen", "-t", "ecdsa", "-f", os.path.join(ssh_dir, key_name), "-N", ""], check=True)
+    elif os.name == "nt":  # Windows
+        subprocess.run(["ssh-keygen", "-t", "ecdsa", "-f", os.path.join(ssh_dir, key_name)], shell=True, check=True)
 
-    # 公開鍵の取得
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.OpenSSH,
-        format=serialization.PublicFormat.OpenSSH
-    )
+    # Read public key
+    with open(os.path.join(ssh_dir, f"{key_name}.pub"), "r") as pub_key_file:
+        public_key = pub_key_file.read().strip()
 
-    # クリップボードに公開鍵の内容をコピーする
-    pyperclip.copy(public_key)
-
-    return private_key_path, public_key.decode('utf-8')
+    # Copy public key to clipboard (Windows-specific)
+    try:
+        pyperclip.copy(public_key)
+        print("Public key copied to clipboard.")
+    except pyperclip.PyperclipException as e:
+        print(f"Failed to copy to clipboard: {e}")
 
 if __name__ == "__main__":
-    private_key_path, public_key = generate_ecdsa_keypair()
-    
-    print("Generated ECDSA keypair successfully.")
-    print(f"Private key saved to: {private_key_path}")
-    print("Public key copied to clipboard.")
-    print("\nPublic key:")
-    print(public_key)
+    generate_ecdsa_ssh_key()
