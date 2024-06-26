@@ -9,7 +9,7 @@ def generate_ecdsa_ssh_key():
         os.makedirs(ssh_dir)
 
     # Key name
-    key_name = "ecdsa_key"
+    key_name = "github_key"
 
     # Generate ECDSA SSH key pair
     if os.name == "posix":  # Unix-like system
