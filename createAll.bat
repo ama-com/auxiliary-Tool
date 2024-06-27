@@ -1,3 +1,18 @@
+:: 仮想環境の作成
+echo Creating virtual environment...
+python -m venv venv
+if %errorlevel% neq 0 (
+    echo Failed to create virtual environment.
+    exit /b %errorlevel%
+)
+
+:: 仮想環境のアクティベート
+echo Activating virtual environment...
+call venv\Scripts\activate
+if %errorlevel% neq 0 (
+    echo Failed to activate virtual environment.
+    exit /b %errorlevel%
+)
 
 :: requirements.txtのインストール
 echo Installing requirements...
@@ -23,3 +38,6 @@ for %%p in (%projects%) do (
 )
 
 echo All builds completed successfully.
+
+:: 仮想環境のディアクティベート
+deactivate
