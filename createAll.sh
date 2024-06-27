@@ -1,21 +1,23 @@
 #!/bin/bash
 
-# autoGitConfig のビルド
-echo "Building autoGitConfig..."
-cd autoGitConfig
-python setup.py build
-cd ..
+# requirements.txtのインストール
+if ! pip install -r requirements.txt; then
+    echo "Failed to install requirements."
+    exit 1
+fi
 
-# createEcdsaKey のビルド
-echo "Building createEcdsaKey..."
-cd createEcdsaKey
-python setup.py build
-cd ..
+# プロジェクトディレクトリのリスト
+projects=("autoGitConfig" "createEcdsaKey" "createSshConfig")
 
-# createSshConfig のビルド
-echo "Building createSshConfig..."
-cd createSshConfig
-python setup.py build
-cd ..
+# 各プロジェクトのビルド
+for project in "${projects[@]}"; do
+    echo "Building $project..."
+    cd "$project"
+    if ! python setup.py build; then
+        echo "Failed to build $project."
+        exit 1
+    fi
+    cd ..
+done
 
-echo "All builds completed."
+echo "All builds completed successfully."
